@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LifeBridge AI - Emergency Response & Disaster Assistant</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- Low Bandwidth / Offline Mode Banner -->
+  <div id="low-bandwidth-banner" class="hidden-element">
+    <div class="banner-content">
+      <span>📶 <strong>Low Bandwidth / Emergency Mode Active</strong> — Heavy assets, maps, and fonts are disabled for rapid cellular loading.</span>
+      <button onclick="toggleLowBandwidth()" class="btn-sm text-btn">Restore Standard Mode</button>
+    </div>
+  </div>
+
+  <div class="app-container">
+    <!-- Top Header -->
+    <header class="app-header">
+      <div class="logo-area">
+        <div class="logo-icon-wrap">
+          <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+          </svg>
+        </div>
+        <div class="logo-text">
+          <h1>LifeBridge AI</h1>
+          <p>Disaster Response Coordinator • Agents for Good</p>
+        </div>
+      </div>
+
+      <!-- Control Sandbox (Simulations) & Mode Toggles -->
+      <div class="header-controls">
+        <div class="sandbox-panel">
+          <span class="control-label">SIMULATION SANDBOX:</span>
+          <button id="btn-scen-clear" class="btn-scen active" onclick="setScenario('clear')">☀️ Clear Weather</button>
+          <button id="btn-scen-flood" class="btn-scen" onclick="setScenario('flood')">🌊 Flood</button>
+          <button id="btn-scen-cyclone" class="btn-scen" onclick="setScenario('cyclone')">🌀 Cyclone</button>
+          <button id="btn-scen-earthquake" class="btn-scen" onclick="setScenario('earthquake')">🧱 Earthquake</button>
+        </div>
+
+        <div class="toggles-panel">
+          <button id="low-bandwidth-toggle" class="btn-toggle" onclick="toggleLowBandwidth()" title="Toggle Low Bandwidth Mode for poor connectivity">
+            <span class="toggle-icon">📶</span> Low Bandwidth
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Emergency Alerts Banner Ticker -->
+    <section class="alerts-ticker-wrap">
+      <div class="ticker-label">
+        <span class="pulse-dot"></span>
+        <span>LIVE UPDATES:</span>
+      </div>
+      <div class="ticker-content" id="alerts-ticker">
+        <!-- Injected via JavaScript -->
+        <span class="ticker-item">Initializing LifeBridge AI sensory systems...</span>
+      </div>
+    </section>
+
+    <!-- Main Grid Layout -->
+    <main class="main-grid">
+      
+      <!-- Left Column: AI Assistant Chatbot & Contacts -->
+      <section class="grid-col left-col">
+        <div class="card chatbot-card">
+          <div class="card-header">
+            <div class="header-title">
+              <svg class="card-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              <h2>LifeBridge AI Companion</h2>
+            </div>
+            <div class="chatbot-status">
+              <span class="status-pulse-green"></span> Online
+            </div>
+          </div>
+          
+          <!-- Chat Window -->
+          <div class="chatbot-messages" id="chat-messages">
+            <!-- Messages added dynamically -->
+          </div>
+          
+          <!-- Chat Input -->
+          <div class="chatbot-input-area">
+            <input type="text" id="chat-input" placeholder="Ask about shelters, safe roads, or supplies..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
+            <button onclick="sendChatMessage()" class="chat-send-btn" aria-label="Send Message">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"/>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Emergency Contacts Quick Dialer -->
+        <div class="card contacts-card">
+          <div class="card-header">
+            <div class="header-title">
+              <svg class="card-icon text-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <h2>Emergency Hotline Hub</h2>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="contacts-grid" id="contacts-list">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Center Column: Map & Dispatch Queue -->
+      <section class="grid-col center-col">
+        <!-- Map Panel -->
+        <div class="card map-card" id="map-card-panel">
+          <div class="card-header">
+            <div class="header-title">
+              <svg class="card-icon text-amber" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
+                <line x1="9" y1="3" x2="9" y2="18"/>
+                <line x1="15" y1="6" x2="15" y2="21"/>
+              </svg>
+              <h2>Disaster Control Map (Simulated)</h2>
+            </div>
+            
+            <!-- Map Filter Toggles -->
+            <div class="map-filters">
+              <button class="filter-chip active" id="filter-shelters" onclick="toggleMapFilter('shelters')">🏠 Shelters</button>
+              <button class="filter-chip active" id="filter-roads" onclick="toggleMapFilter('roads')">🚧 Roads</button>
+              <button class="filter-chip active" id="filter-hospitals" onclick="toggleMapFilter('hospitals')">🏥 Medical</button>
+            </div>
+          </div>
+          
+          <div class="card-body map-viewport-container">
+            <!-- Simulated Map Canvas/SVG -->
+            <div class="map-viewport" id="map-viewport">
+              <svg class="map-svg" id="map-svg-element" viewBox="0 0 500 350">
+                <!-- Glowing Grid Backdrop -->
+                <defs>
+                  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+                  </pattern>
+                  <filter id="glow-red" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="4" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                  <filter id="glow-amber" x="-20%" y="-20%" width="140%" height="140%">
+                    <feGaussianBlur stdDeviation="3" result="blur" />
+                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                  </filter>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+                
+                <!-- Road Network Vectors -->
+                <g id="map-roads-group"></g>
+                <!-- Locations / Points of Interest -->
+                <g id="map-markers-group"></g>
+                <!-- Evacuation Routes / Paths -->
+                <g id="map-paths-group"></g>
+              </svg>
+
+              <!-- Live Tooltip -->
+              <div class="map-tooltip" id="map-tooltip">Hover over details</div>
+
+              <!-- Map Overlay Legend -->
+              <div class="map-legend">
+                <div class="legend-item"><span class="legend-color safe"></span> Safe</div>
+                <div class="legend-item"><span class="legend-color warning"></span> Hazard</div>
+                <div class="legend-item"><span class="legend-color blocked"></span> Blocked</div>
+              </div>
+            </div>
+            
+            <!-- Map Detailed Card -->
+            <div id="map-detail-card" class="map-detail-card hidden-element">
+              <!-- Injected by click trigger -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Low Bandwidth Text Dashboard (Alternate View) -->
+        <div class="card lb-dashboard-card hidden-element" id="lb-dashboard-panel">
+          <div class="card-header">
+            <h2>Quick Emergency Status Directory</h2>
+          </div>
+          <div class="card-body">
+            <div class="lb-section">
+              <h3>🏠 Available Shelters</h3>
+              <div id="lb-shelters-list" class="lb-list"></div>
+            </div>
+            <div class="lb-section">
+              <h3>🚧 Road and Bypass Status</h3>
+              <div id="lb-roads-list" class="lb-list"></div>
+            </div>
+            <div class="lb-section">
+              <h3>🏥 Active Medical Services</h3>
+              <div id="lb-hospitals-list" class="lb-list"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Emergency Request Triage & Dispatch Queue -->
+        <div class="card triage-card">
+          <div class="card-header">
+            <div class="header-title">
+              <svg class="card-icon text-red" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <h2>Emergency Request Hub (Triage)</h2>
+            </div>
+          </div>
+          <div class="card-body triage-layout">
+            <!-- Request Submission Form -->
+            <form id="triage-form" onsubmit="submitEmergencyRequest(event)" class="triage-form">
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="req-name">Your Name / Reporter</label>
+                  <input type="text" id="req-name" required placeholder="John Doe">
+                </div>
+                <div class="form-group">
+                  <label for="req-sector">Sector / Area</label>
+                  <input type="text" id="req-sector" required placeholder="e.g. South Sector">
+                </div>
+              </div>
+              <div class="form-row-2">
+                <div class="form-group">
+                  <label for="req-type">Request Type</label>
+                  <select id="req-type">
+                    <option value="Rescue">🚨 Immediate Rescue / Danger</option>
+                    <option value="Medical">🏥 First Aid / Medical Aid</option>
+                    <option value="Supplies">📦 Food, Water or Blanket</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="req-severity">Severity Rating</label>
+                  <select id="req-severity">
+                    <option value="danger">Critical (Severe Distress)</option>
+                    <option value="warning">Moderate (Urgent Need)</option>
+                    <option value="info">Minor (Non-Life Threatening)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="req-desc">Situation Details</label>
+                <textarea id="req-desc" rows="2" required placeholder="State exact situation (e.g. water rising, trapped on roof)"></textarea>
+              </div>
+              <button type="submit" class="btn btn-danger btn-full">Submit Dispatch Request</button>
+            </form>
+
+            <!-- Dispatch Live Queue -->
+            <div class="dispatch-queue-wrap">
+              <h3>Live Dispatch Triage Queue</h3>
+              <div class="dispatch-list" id="dispatch-queue">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Interactive Widgets & Tools -->
+      <section class="grid-col right-col">
+        <div class="card tools-card">
+          <!-- Card Tab Headers -->
+          <div class="tools-tabs">
+            <button id="tab-btn-tools" class="tab-btn active" onclick="switchToolsTab('tools')">🛠️ Calculators</button>
+            <button id="tab-btn-guides" class="tab-btn" onclick="switchToolsTab('guides')">📋 Survival Guides</button>
+            <button id="tab-btn-community" class="tab-btn" onclick="switchToolsTab('community')">🤝 Community Board</button>
+          </div>
+
+          <div class="card-body tools-content-scroll">
+            
+            <!-- TAB 1: CALCULATORS & ROUTING -->
+            <div id="tab-content-tools" class="tab-pane active">
+              
+              <!-- Safe Route Checking Widget -->
+              <div class="widget-section">
+                <h3>🚗 Safe Route Inspector</h3>
+                <p class="widget-desc">Verifies if a route passes through hazardous or blocked checkpoints.</p>
+                <div class="route-planner-form">
+                  <div class="form-group">
+                    <label for="route-start">Starting Point</label>
+                    <select id="route-start">
+                      <option value="West Sector">West Sector</option>
+                      <option value="Central">Central Plaza</option>
+                      <option value="North Sector">North Sector</option>
+                      <option value="South Sector">South Sector</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label for="route-end">Destination Node</label>
+                    <select id="route-end">
+                      <option value="sh-1">Central School Shelter</option>
+                      <option value="sh-2">Arena Community Shelter</option>
+                      <option value="sh-4">Metro Exhibition Hall</option>
+                      <option value="hp-1">Metro General Hospital</option>
+                    </select>
+                  </div>
+                  <button onclick="calculateRouteSafety()" class="btn btn-accent btn-full">Verify Route Safety</button>
+                </div>
+                <div id="route-result" class="route-result-box hidden-element">
+                  <!-- Result injected by app.js -->
+                </div>
+              </div>
+
+              <hr class="widget-divider">
+
+              <!-- Family Supplies Emergency Calculator -->
+              <div class="widget-section">
+                <h3>📦 Emergency Supplies Calculator</h3>
+                <p class="widget-desc">Calculates basic nutritional and emergency resource amounts needed for survival.</p>
+                <div class="calculator-form">
+                  <div class="form-row-3">
+                    <div class="form-group">
+                      <label for="calc-adults">Adults</label>
+                      <input type="number" id="calc-adults" min="1" value="2" onchange="calculateSupplies()">
+                    </div>
+                    <div class="form-group">
+                      <label for="calc-children">Children</label>
+                      <input type="number" id="calc-children" min="0" value="1" onchange="calculateSupplies()">
+                    </div>
+                    <div class="form-group">
+                      <label for="calc-pets">Pets</label>
+                      <input type="number" id="calc-pets" min="0" value="0" onchange="calculateSupplies()">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="calc-days">Survival Period</label>
+                    <select id="calc-days" onchange="calculateSupplies()">
+                      <option value="3">3 Days (Critical Supply)</option>
+                      <option value="7" selected>7 Days (Recommended Pack)</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="calculator-results" id="calc-results">
+                  <!-- Calculated values -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- TAB 2: SURVIVAL PREP GUIDES -->
+            <div id="tab-content-guides" class="tab-pane">
+              <div class="widget-section">
+                <h3>📋 Personal Readiness Checklists</h3>
+                <p class="widget-desc">Keep track of your immediate preparations. Mark items complete to calculate readiness score.</p>
+                
+                <!-- Category Select -->
+                <div class="guide-category-selector">
+                  <button id="btn-guide-flood" class="btn-guide-cat active" onclick="loadGuideCategory('flood')">Flood</button>
+                  <button id="btn-guide-cyclone" class="btn-guide-cat" onclick="loadGuideCategory('cyclone')">Cyclone</button>
+                  <button id="btn-guide-earthquake" class="btn-guide-cat" onclick="loadGuideCategory('earthquake')">Earthquake</button>
+                  <button id="btn-guide-medical" class="btn-guide-cat" onclick="loadGuideCategory('medical')">First Aid</button>
+                </div>
+
+                <!-- Score Progress Bar -->
+                <div class="progress-bar-wrap">
+                  <div class="progress-label">
+                    <span>Preparation Level:</span>
+                    <span id="guide-progress-pct">0%</span>
+                  </div>
+                  <div class="progress-track">
+                    <div class="progress-fill" id="guide-progress-fill" style="width: 0%"></div>
+                  </div>
+                </div>
+
+                <!-- Checklist Items -->
+                <div class="checklist-items-container" id="checklist-items">
+                  <!-- Rendered dynamically -->
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: COMMUNITY P2P HELP BOARD -->
+            <div id="tab-content-community" class="tab-pane">
+              <div class="widget-section">
+                <h3>🤝 Community Help Hub</h3>
+                <p class="widget-desc">Peer-to-peer neighborhood support. Offer resources or view active help listings.</p>
+                
+                <!-- Post Offer Form -->
+                <form id="community-form" onsubmit="submitCommunityOffer(event)" class="community-form">
+                  <h4>Offer Volunteer Help</h4>
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label for="co-name">Your Name</label>
+                      <input type="text" id="co-name" required placeholder="e.g. David L.">
+                    </div>
+                    <div class="form-group">
+                      <label for="co-phone">Contact Phone</label>
+                      <input type="text" id="co-phone" required placeholder="555-0130">
+                    </div>
+                  </div>
+                  <div class="form-row-2">
+                    <div class="form-group">
+                      <label for="co-cat">Category</label>
+                      <select id="co-cat">
+                        <option value="Food/Water">Food & Drinking Water</option>
+                        <option value="Transport">Vehicle Transport / SUV</option>
+                        <option value="Shelter Space">Temporary Shelter Space</option>
+                        <option value="Medical Help">Medical/Nursing Help</option>
+                        <option value="Tools">Rescue Tools / Chainsaw</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="co-desc">What can you share/provide?</label>
+                    <textarea id="co-desc" rows="2" required placeholder="Explain resource and availability..."></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-accent btn-full">Post Help Offer</button>
+                </form>
+
+                <hr class="widget-divider">
+
+                <!-- Help Listings -->
+                <div class="community-listings-wrap">
+                  <h4>Active Mutual Aid Offers</h4>
+                  <div class="community-list" id="community-listings">
+                    <!-- Loaded dynamically -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>&copy; 2026 LifeBridge AI Coordinator. Open Source Crisis Tool (Agents for Good). Working offline via local cache.</p>
+      <p>System status: <span class="badge badge-success">Telemetry Sync Online</span></p>
+    </footer>
+  </div>
+
+  <!-- Load Database Data First -->
+  <script src="data.js"></script>
+  <!-- Load Chatbot AI Responder -->
+  <script src="ai.js"></script>
+  <!-- Load Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>
