@@ -1392,3 +1392,294 @@ body.low-bandwidth-active .lb-item.warning { border-color: #ffd60a; color: #ffd6
     grid-column: span 1 !important;
   }
 }
+
+/* --- EXTENDED EMERGENCY APP FEATURES --- */
+
+/* 1. SOS Beacon Alarm Overlay */
+.sos-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #000000;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  animation: flash-sos-background 1.2s infinite alternate;
+}
+
+@keyframes flash-sos-background {
+  0% { background-color: #0f0202; }
+  50% { background-color: #3d0505; }
+  100% { background-color: #5e0808; }
+}
+
+.sos-overlay-content {
+  text-align: center;
+  max-width: 600px;
+  padding: 35px;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(20px);
+  border: 2.5px solid var(--color-danger);
+  border-radius: 16px;
+  box-shadow: 0 0 50px rgba(255, 59, 48, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.sos-beacon-pulse {
+  font-size: 80px;
+  animation: pulse-beacon 0.8s infinite alternate;
+}
+
+@keyframes pulse-beacon {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  100% { transform: scale(1.2); opacity: 1; filter: drop-shadow(0 0 20px var(--color-danger)); }
+}
+
+.sos-coordinates {
+  font-family: monospace;
+  font-size: 15px;
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border-glass);
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.btn-sos {
+  background: linear-gradient(135deg, var(--color-danger), #b31c12);
+  color: #ffffff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 0 10px rgba(255, 59, 48, 0.4);
+  transition: all 0.2s ease;
+  font-family: var(--font-heading);
+}
+
+.btn-sos:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px rgba(255, 59, 48, 0.7);
+}
+
+.animate-sos-pulse {
+  animation: pulse-sos-btn 1.5s infinite;
+}
+
+@keyframes pulse-sos-btn {
+  0% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0.6); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 59, 48, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 59, 48, 0); }
+}
+
+/* 2. Weather & Telemetry Card */
+.telemetry-card {
+  border-bottom: 2px solid var(--header-accent-color);
+  transition: border-color 0.5s ease;
+}
+
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.telemetry-item {
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.telemetry-item.full-width {
+  grid-column: span 2;
+}
+
+.telemetry-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.telemetry-val {
+  font-family: var(--font-heading);
+  font-size: 18px;
+  font-weight: 700;
+}
+
+/* 3. Map Click Reporting Modal */
+.map-report-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(16, 21, 36, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid var(--border-glass);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border-radius: 12px;
+  padding: 16px;
+  width: 260px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.map-report-modal h4 {
+  font-size: 14px;
+  color: var(--text-main);
+  border-bottom: 1px solid var(--border-glass);
+  padding-bottom: 6px;
+  margin: 0;
+}
+
+.map-report-modal .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.map-report-modal label {
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-align: left;
+}
+
+.map-report-modal input, .map-report-modal select {
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-glass);
+  border-radius: 6px;
+  color: var(--text-main);
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.modal-buttons button {
+  flex: 1;
+}
+
+/* Custom map reported pins */
+.custom-hazard-pin {
+  animation: pulse-hazard-pin 1.2s infinite;
+  cursor: pointer;
+}
+
+@keyframes pulse-hazard-pin {
+  0% { transform: scale(1); filter: drop-shadow(0 0 1px #ff3b30); }
+  50% { transform: scale(1.3); filter: drop-shadow(0 0 8px #ff3b30); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 1px #ff3b30); }
+}
+
+/* 4. Chat TTS Speaker Button */
+.voice-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px;
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  vertical-align: middle;
+}
+
+.voice-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.voice-btn.playing {
+  color: var(--color-success);
+  animation: speaking-bounce 0.6s infinite alternate;
+}
+
+@keyframes speaking-bounce {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.25); }
+}
+
+/* 5. Sleek Language Dropdown */
+.lang-select {
+  background: rgba(0, 0, 0, 0.3);
+  color: var(--text-main);
+  border: 1px solid var(--border-glass);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.lang-select:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--text-muted);
+}
+
+/* 6. Admin Triage Dispatch Actions */
+.dispatch-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.btn-admin {
+  flex: 1;
+  font-size: 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+  font-family: var(--font-heading);
+}
+
+.btn-admin-process {
+  background: var(--color-warning);
+  color: #000000;
+}
+
+.btn-admin-process:hover {
+  background: #e6be00;
+}
+
+.btn-admin-resolve {
+  background: var(--color-success);
+  color: #000000;
+}
+
+.btn-admin-resolve:hover {
+  background: #24b84c;
+}
+

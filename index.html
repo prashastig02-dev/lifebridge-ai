@@ -12,6 +12,17 @@
   <link rel="stylesheet" href="index.css">
 </head>
 <body>
+  <!-- Fullscreen SOS Beacon Alarm Overlay -->
+  <div id="sos-overlay" class="sos-overlay hidden-element">
+    <div class="sos-overlay-content">
+      <div class="sos-beacon-pulse">🚨</div>
+      <h1 data-translate="sosAlertHeader">EMERGENCY SOS BEACON ACTIVE</h1>
+      <p data-translate="sosAlertDesc">Broadcasting emergency locator frequency (simulated). Flashlight signal pulsing.</p>
+      <div class="sos-coordinates" id="sos-gps-coords">Coordinates: Loading GPS...</div>
+      <button onclick="toggleSOSBeacon()" class="btn btn-danger btn-lg" data-translate="btnStopSos">STOP SOS BEACON</button>
+    </div>
+  </div>
+
   <!-- Low Bandwidth / Offline Mode Banner -->
   <div id="low-bandwidth-banner" class="hidden-element">
     <div class="banner-content">
@@ -30,25 +41,34 @@
           </svg>
         </div>
         <div class="logo-text">
-          <h1>LifeBridge AI</h1>
-          <p>Disaster Response Coordinator • Agents for Good</p>
+          <h1 data-translate="appTitle">LifeBridge AI</h1>
+          <p data-translate="appSubtitle">Disaster Response Coordinator • Agents for Good</p>
         </div>
       </div>
 
       <!-- Control Sandbox (Simulations) & Mode Toggles -->
       <div class="header-controls">
         <div class="sandbox-panel">
-          <span class="control-label">SIMULATION SANDBOX:</span>
-          <button id="btn-scen-clear" class="btn-scen active" onclick="setScenario('clear')">☀️ Clear Weather</button>
-          <button id="btn-scen-flood" class="btn-scen" onclick="setScenario('flood')">🌊 Flood</button>
-          <button id="btn-scen-cyclone" class="btn-scen" onclick="setScenario('cyclone')">🌀 Cyclone</button>
-          <button id="btn-scen-earthquake" class="btn-scen" onclick="setScenario('earthquake')">🧱 Earthquake</button>
+          <span class="control-label" data-translate="simLabel">SIMULATION SANDBOX:</span>
+          <button id="btn-scen-clear" class="btn-scen active" onclick="setScenario('clear')" data-translate="clearWeather">☀️ Clear Weather</button>
+          <button id="btn-scen-flood" class="btn-scen" onclick="setScenario('flood')" data-translate="flood">🌊 Flood</button>
+          <button id="btn-scen-cyclone" class="btn-scen" onclick="setScenario('cyclone')" data-translate="cyclone">🌀 Cyclone</button>
+          <button id="btn-scen-earthquake" class="btn-scen" onclick="setScenario('earthquake')" data-translate="earthquake">🧱 Earthquake</button>
         </div>
 
         <div class="toggles-panel">
-          <button id="low-bandwidth-toggle" class="btn-toggle" onclick="toggleLowBandwidth()" title="Toggle Low Bandwidth Mode for poor connectivity">
+          <button id="sos-toggle" class="btn-sos animate-sos-pulse" onclick="toggleSOSBeacon()" title="Trigger emergency SOS Beacon" data-translate="triggerSos">
+            🚨 Trigger SOS
+          </button>
+          <button id="low-bandwidth-toggle" class="btn-toggle" onclick="toggleLowBandwidth()" title="Toggle Low Bandwidth Mode for poor connectivity" data-translate="lowBandwidth">
             <span class="toggle-icon">📶</span> Low Bandwidth
           </button>
+          <select id="lang-select" class="lang-select" onchange="changeLanguage(this.value)" aria-label="Select Language">
+            <option value="en">🇺🇸 EN</option>
+            <option value="es">🇪🇸 ES</option>
+            <option value="hi">🇮🇳 HI</option>
+            <option value="fr">🇫🇷 FR</option>
+          </select>
         </div>
       </div>
     </header>
@@ -129,7 +149,7 @@
                 <line x1="9" y1="3" x2="9" y2="18"/>
                 <line x1="15" y1="6" x2="15" y2="21"/>
               </svg>
-              <h2>Disaster Control Map (Simulated)</h2>
+              <h2 data-translate="controlMap">Disaster Control Map (Simulated)</h2>
             </div>
             
             <!-- Map Filter Toggles -->
@@ -176,6 +196,26 @@
                 <div class="legend-item"><span class="legend-color safe"></span> Safe</div>
                 <div class="legend-item"><span class="legend-color warning"></span> Hazard</div>
                 <div class="legend-item"><span class="legend-color blocked"></span> Blocked</div>
+              </div>
+
+              <!-- Map Click Report Modal -->
+              <div id="map-report-modal" class="map-report-modal hidden-element">
+                <h4 data-translate="lblOfferHelp">Report Hazard</h4>
+                <div class="form-group">
+                  <label for="map-report-desc" data-translate="situationDetails">Details</label>
+                  <input type="text" id="map-report-desc" placeholder="e.g. Fallen tree, flooded segment" required>
+                </div>
+                <div class="form-group">
+                  <label for="map-report-severity" data-translate="severityLabel">Severity</label>
+                  <select id="map-report-severity">
+                    <option value="danger">Danger</option>
+                    <option value="warning">Warning</option>
+                  </select>
+                </div>
+                <div class="modal-buttons">
+                  <button onclick="submitMapReport()" class="btn btn-sm btn-danger" data-translate="btnSubmitReq">Report</button>
+                  <button onclick="closeMapReportModal()" class="btn btn-sm btn-secondary">Cancel</button>
+                </div>
               </div>
             </div>
             
@@ -270,6 +310,41 @@
 
       <!-- Right Column: Interactive Widgets & Tools -->
       <section class="grid-col right-col">
+        <!-- Live Weather Telemetry Status Card -->
+        <div class="card telemetry-card">
+          <div class="card-header">
+            <div class="header-title">
+              <svg class="card-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+              <h2 data-translate="weatherTitle">⚡ Live Weather Telemetry</h2>
+            </div>
+          </div>
+          <div class="card-body telemetry-grid">
+            <div class="telemetry-item">
+              <span class="telemetry-label" data-translate="weatherTemp">Temperature</span>
+              <span class="telemetry-val text-cyan" id="weather-temp">24°C</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label" data-translate="weatherWind">Wind Speed</span>
+              <span class="telemetry-val text-amber" id="weather-wind">5 km/h</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label" data-translate="weatherRain">Precipitation</span>
+              <span class="telemetry-val text-info" id="weather-rain">0 mm</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label" data-translate="weatherSeismic">Seismic Level</span>
+              <span class="telemetry-val text-red" id="weather-seismic">0.0 Mag</span>
+            </div>
+            <div class="telemetry-item full-width">
+              <span class="telemetry-label" data-translate="weatherStatus">Condition State</span>
+              <span class="telemetry-val text-green" id="weather-status">Clear & Calm</span>
+            </div>
+          </div>
+        </div>
+
         <div class="card tools-card">
           <!-- Card Tab Headers -->
           <div class="tools-tabs">
@@ -446,10 +521,10 @@
   </div>
 
   <!-- Load Database Data First -->
-  <script src="data.js"></script>
+  <script src="data.js?v=1.0.2"></script>
   <!-- Load Chatbot AI Responder -->
-  <script src="ai.js"></script>
+  <script src="ai.js?v=1.0.2"></script>
   <!-- Load Application Logic -->
-  <script src="app.js"></script>
+  <script src="app.js?v=1.0.2"></script>
 </body>
 </html>

@@ -682,13 +682,65 @@ function addChatMessage(sender, data) {
   if (sender === "user") {
     bubble.textContent = data;
   } else {
-    // Markdown formatting helper
-    bubble.innerHTML = formatMarkdown(data.text);
+    // Clean text for speech synthesis
+    const rawText = data.text;
+    const cleanText = rawText.replace(/\*\*/g, "").replace(/\*/g, "").replace(/###/g, "").replace(/##/g, "").replace(/#/g, "").replace(/`/g, "");
+    const encodedText = encodeURIComponent(cleanText);
+    
+    // Markdown formatting helper + Voice Button
+    bubble.innerHTML = `
+      <div class="chat-text-content">${formatMarkdown(rawText)}</div>
+      <button class="voice-btn" onclick="speakChatText(this, decodeURIComponent('${encodedText}'))" title="Read Aloud">🔊</button>
+    `;
   }
 
   chatMessages.appendChild(bubble);
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+let currentUtterance = null;
+window.speakChatText = function (btn, text) {
+  if (window.speechSynthesis) {
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      document.querySelectorAll(".voice-btn").forEach(b => b.classList.remove("playing"));
+      if (currentUtterance && currentUtterance.btn === btn) {
+        currentUtterance = null;
+        return;
+      }
+    }
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const voices = window.speechSynthesis.getVoices();
+    let voiceLang = "en-US";
+    if (currentLanguage === "es") voiceLang = "es-ES";
+    if (currentLanguage === "hi") voiceLang = "hi-IN";
+    if (currentLanguage === "fr") voiceLang = "fr-FR";
+    
+    const matchingVoice = voices.find(v => v.lang.startsWith(currentLanguage) || v.lang.startsWith(voiceLang));
+    if (matchingVoice) {
+      utterance.voice = matchingVoice;
+    }
+    utterance.lang = voiceLang;
+
+    utterance.onstart = () => {
+      btn.classList.add("playing");
+    };
+
+    utterance.onend = () => {
+      btn.classList.remove("playing");
+    };
+
+    utterance.onerror = () => {
+      btn.classList.remove("playing");
+    };
+
+    currentUtterance = { utterance, btn };
+    window.speechSynthesis.speak(utterance);
+  } else {
+    alert("Text-to-speech is not supported in this browser.");
+  }
+};
 
 function addChatTypingIndicator() {
   const chatMessages = document.getElementById("chat-messages");
