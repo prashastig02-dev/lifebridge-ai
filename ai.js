@@ -155,13 +155,72 @@ If you are running low on critical items, here are the recommendations:
       };
     }
     
+    // Cyclone & Severe Storm instructions
+    if (cleanQuery.includes("cyclone") || cleanQuery.includes("storm") || cleanQuery.includes("hurricane") || cleanQuery.includes("wind") || cleanQuery.includes("typhoon")) {
+      return {
+        text: `### Cyclone & High Wind Safety
+        
+1. **Shelter Indoors**: Remain in an interior room on the lowest floor away from windows and glass doors.
+2. **Fly Debris Hazard**: High winds can turn loose objects into dangerous projectiles. Do not step outdoors until all warnings clear.
+3. **Power Outages**: Disconnect major electrical appliances to protect from voltage surges. Keep battery lanterns accessible.
+4. **Storm Shelters**: *Arena Community Center* and *Central High School* provide heavy wind reinforcement. <button class="chat-btn" onclick="focusOnMap('sh-2')">Locate Arena Shelter</button>`,
+        action: "show-cyclone-guide"
+      };
+    }
+
+    // Direct Facility Name Match
+    const allShelters = scenario.shelters || [];
+    const matchedShelter = allShelters.find(s => cleanQuery.includes(s.name.toLowerCase()) || cleanQuery.includes(s.id.toLowerCase()));
+    if (matchedShelter) {
+      return {
+        text: `### 🏠 ${matchedShelter.name}
+* **Status:** **${matchedShelter.status}** (${matchedShelter.filled}/${matchedShelter.capacity} capacity)
+* **Address:** ${matchedShelter.address}
+* **Amenities:** ${matchedShelter.pets ? "🐾 Pets Allowed" : "🚫 No Pets"} | ${matchedShelter.medical ? "⚕️ Medical Doctor Present" : "No Medical Staff"}
+
+<button class="chat-btn" onclick="focusOnMap('${matchedShelter.id}')">Focus on Map</button>`,
+        focus: "shelters",
+        action: "locate-facility"
+      };
+    }
+
+    const allHospitals = scenario.hospitals || [];
+    const matchedHospital = allHospitals.find(h => cleanQuery.includes(h.name.toLowerCase()) || cleanQuery.includes(h.id.toLowerCase()));
+    if (matchedHospital) {
+      return {
+        text: `### 🏥 ${matchedHospital.name}
+* **Status:** **${matchedHospital.status}**
+* **Occupancy:** ${matchedHospital.occupancy} (Capacity: ${matchedHospital.capacity})
+* **Phone:** ${matchedHospital.phone}
+* **Address:** ${matchedHospital.address}
+
+<button class="chat-btn" onclick="focusOnMap('${matchedHospital.id}')">Focus on Map</button>`,
+        focus: "hospitals",
+        action: "locate-facility"
+      };
+    }
+
+    const allRoads = scenario.roads || [];
+    const matchedRoad = allRoads.find(r => cleanQuery.includes(r.name.toLowerCase()) || cleanQuery.includes(r.id.toLowerCase()));
+    if (matchedRoad) {
+      return {
+        text: `### 🚧 ${matchedRoad.name}
+* **Current Status:** **${matchedRoad.status}**
+* **Telemetry & Field Notes:** ${matchedRoad.notes}
+
+<button class="chat-btn" onclick="focusOnMap('${matchedRoad.id}')">View Road on Map</button>`,
+        focus: "roads",
+        action: "locate-facility"
+      };
+    }
+    
     // Default reply if no trigger matches
     return {
       text: `### I'm here to help
       
 I detected your message but couldn't map it directly to a specific automated database search. 
 
-* **To locate medical aid**, type *'hospital'* or *'doctor'*.
+* **To locate medical aid**, type *'hospital'*, *'clinic'*, or *'doctor'*.
 * **To find safe shelters**, type *'shelter'* or *'where is safe'*.
 * **To check road closures**, type *'road status'* or *'highway'*.
 * **To view emergency prep checklists**, click on the **Survival Prep Guides** panel.

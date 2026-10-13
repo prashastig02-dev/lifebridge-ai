@@ -230,7 +230,10 @@ const emergencyTranslations = {
     weatherWind: "Wind Speed",
     weatherRain: "Precipitation",
     weatherSeismic: "Seismic Level",
-    weatherStatus: "Condition State"
+    weatherStatus: "Condition State",
+    sosAlertHeader: "EMERGENCY SOS BEACON ACTIVE",
+    sosAlertDesc: "Broadcasting emergency locator frequency (simulated). Flashlight signal pulsing.",
+    btnStopSos: "STOP SOS BEACON"
   },
   es: {
     appTitle: "LifeBridge AI",
@@ -290,7 +293,10 @@ const emergencyTranslations = {
     weatherWind: "Velocidad del Viento",
     weatherRain: "Precipitación",
     weatherSeismic: "Nivel Sísmico",
-    weatherStatus: "Estado de la Condición"
+    weatherStatus: "Estado de la Condición",
+    sosAlertHeader: "BALIZA DE SOS DE EMERGENCIA ACTIVA",
+    sosAlertDesc: "Transmitiendo frecuencia de localización de emergencia (simulada). Señal de linterna pulsando.",
+    btnStopSos: "DETENER BALIZA SOS"
   },
   hi: {
     appTitle: "लाइफब्रिज एआई (LifeBridge AI)",
@@ -350,7 +356,10 @@ const emergencyTranslations = {
     weatherWind: "हवा की गति",
     weatherRain: "वर्षा की मात्रा",
     weatherSeismic: "भूकंपीय स्तर",
-    weatherStatus: "मौसम की स्थिति"
+    weatherStatus: "मौसम की स्थिति",
+    sosAlertHeader: "आपातकालीन एसओएस बीकन सक्रिय",
+    sosAlertDesc: "आपातकालीन लोकेटर आवृत्ति प्रसारित हो रही है (सिम्युलेटेड)। टॉर्च सिग्नल पल्सिंग।",
+    btnStopSos: "एसओएस बीकन बंद करें"
   },
   fr: {
     appTitle: "LifeBridge AI",
@@ -410,7 +419,10 @@ const emergencyTranslations = {
     weatherWind: "Vitesse du Vent",
     weatherRain: "Précipitations",
     weatherSeismic: "Niveau Sismique",
-    weatherStatus: "État Météo"
+    weatherStatus: "État Météo",
+    sosAlertHeader: "BALISE DE DÉTRESSE SOS ACTIVE",
+    sosAlertDesc: "Diffusion de la fréquence de localisation d'urgence (simulée). Signal lumineux clignotant.",
+    btnStopSos: "ARRÊTER LA BALISE SOS"
   }
 };
 

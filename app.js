@@ -3,6 +3,7 @@
 // Global App State
 let appState = {
   currentScenario: "clear",
+  currentLanguage: "en",
   activeFilters: {
     shelters: true,
     roads: true,
@@ -10,15 +11,15 @@ let appState = {
   },
   activeGuideCategory: "flood",
   lowBandwidthMode: false,
-  requests: [...window.emergencyData.initialRequests],
-  communityOffers: [...window.emergencyData.initialCommunityOffers],
+  requests: [...(window.emergencyData?.initialRequests || [])],
+  communityOffers: [...(window.emergencyData?.initialCommunityOffers || [])],
   selectedLocationId: null,
   checklistStates: {}
 };
 
 // Initialize Checklist States
 function initChecklistStates() {
-  const checklists = window.emergencyData.survivalChecklists;
+  const checklists = window.emergencyData?.survivalChecklists || {};
   for (const cat in checklists) {
     appState.checklistStates[cat] = {};
     checklists[cat].forEach(item => {
@@ -35,6 +36,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Send welcome message
   addChatMessage("assistant", window.aiAssistant.getAIResponse("help", appState.currentScenario));
 
+  // Map right-click listener to report hazard directly
+  const mapSvg = document.getElementById("map-svg-element");
+  if (mapSvg) {
+    mapSvg.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      openMapReportModal("Hazard reported on map coordinate");
+    });
+  }
+
   // Live simulation update ticker (simulates dispatch triage activity)
   setInterval(simulateEmergencyUpdates, 15000);
 });
@@ -42,6 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Primary Rendering Master function
 function renderAll() {
   renderAlerts();
+  renderTelemetry();
   renderContacts();
   renderTriageQueue();
   renderSuppliesCalculator();
@@ -53,6 +64,24 @@ function renderAll() {
   } else {
     renderVectorMap();
   }
+}
+
+// 0. Render Live Telemetry Sensors
+function renderTelemetry() {
+  const scenario = window.emergencyData?.scenarios[appState.currentScenario];
+  if (!scenario || !scenario.weather) return;
+
+  const tempEl = document.getElementById("weather-temp");
+  const windEl = document.getElementById("weather-wind");
+  const rainEl = document.getElementById("weather-rain");
+  const seismicEl = document.getElementById("weather-seismic");
+  const statusEl = document.getElementById("weather-status");
+
+  if (tempEl) tempEl.textContent = scenario.weather.temp;
+  if (windEl) windEl.textContent = scenario.weather.wind;
+  if (rainEl) rainEl.textContent = scenario.weather.rain;
+  if (seismicEl) seismicEl.textContent = scenario.weather.seismic;
+  if (statusEl) statusEl.textContent = scenario.weather.status;
 }
 
 // 1. Render Alerts Ticker
@@ -102,11 +131,12 @@ function renderContacts() {
 // 3. Render Triage Dispatch Queue
 function renderTriageQueue() {
   const queueEl = document.getElementById("dispatch-queue");
+  if (!queueEl) return;
   queueEl.innerHTML = "";
 
   // Sort requests: danger first, then warning, then info
   const severityWeight = { danger: 3, warning: 2, info: 1 };
-  const sortedRequests = [...appState.requests].sort((a, b) => severityWeight[b.severity] - severityWeight[a.severity]);
+  const sortedRequests = [...appState.requests].sort((a, b) => (severityWeight[b.severity] || 0) - (severityWeight[a.severity] || 0));
 
   sortedRequests.forEach(req => {
     const item = document.createElement("div");
@@ -117,10 +147,18 @@ function renderTriageQueue() {
     if (req.status === "Processing") badgeClass = "badge-warning";
     if (req.status === "Queued") badgeClass = "badge-danger";
 
+    let actionBtnHtml = "";
+    if (req.status === "Queued") {
+      actionBtnHtml = `<button class="btn-admin btn-admin-process" onclick="advanceRequestStatus('${req.id}', 'Processing')">Process</button>`;
+    } else if (req.status === "Processing") {
+      actionBtnHtml = `<button class="btn-admin btn-admin-resolve" onclick="advanceRequestStatus('${req.id}', 'Dispatched')">Dispatch</button>`;
+    }
+
     item.innerHTML = `
       <div class="dispatch-body">
         <h4>${req.name} (${req.sector})</h4>
         <p><strong>${req.type}:</strong> ${req.desc}</p>
+        ${actionBtnHtml ? `<div class="dispatch-actions">${actionBtnHtml}</div>` : ""}
       </div>
       <div class="dispatch-meta">
         <span class="badge ${badgeClass}">${req.status}</span>
@@ -130,6 +168,16 @@ function renderTriageQueue() {
     queueEl.appendChild(item);
   });
 }
+
+function advanceRequestStatus(reqId, newStatus) {
+  const req = appState.requests.find(r => r.id === reqId);
+  if (req) {
+    req.status = newStatus;
+    req.time = "Just now";
+    renderTriageQueue();
+  }
+}
+window.advanceRequestStatus = advanceRequestStatus;
 
 // 4. Submit Emergency Triage Request
 window.submitEmergencyRequest = function (event) {
@@ -193,6 +241,72 @@ function simulateEmergencyUpdates() {
     return;
   }
 }
+
+// 5.5 Map Filters & Reporting
+function toggleMapFilter(filterType) {
+  if (appState.activeFilters[filterType] !== undefined) {
+    appState.activeFilters[filterType] = !appState.activeFilters[filterType];
+    const btn = document.getElementById(`filter-${filterType}`);
+    if (btn) {
+      if (appState.activeFilters[filterType]) {
+        btn.classList.add("active");
+      } else {
+        btn.classList.remove("active");
+      }
+    }
+    renderVectorMap();
+  }
+}
+window.toggleMapFilter = toggleMapFilter;
+
+function openMapReportModal(defaultDesc = "") {
+  const modal = document.getElementById("map-report-modal");
+  const descInput = document.getElementById("map-report-desc");
+  if (descInput && defaultDesc) descInput.value = defaultDesc;
+  if (modal) modal.classList.remove("hidden-element");
+}
+window.openMapReportModal = openMapReportModal;
+
+function closeMapReportModal() {
+  const modal = document.getElementById("map-report-modal");
+  if (modal) modal.classList.add("hidden-element");
+  const input = document.getElementById("map-report-desc");
+  if (input) input.value = "";
+}
+window.closeMapReportModal = closeMapReportModal;
+
+function submitMapReport() {
+  const descInput = document.getElementById("map-report-desc");
+  const sevInput = document.getElementById("map-report-severity");
+  const desc = descInput ? descInput.value.trim() : "";
+  const severity = sevInput ? sevInput.value : "warning";
+
+  if (!desc) {
+    if (descInput) descInput.focus();
+    return;
+  }
+
+  const newReq = {
+    id: `req-map-${Date.now()}`,
+    name: "Citizen (Map Report)",
+    sector: "Field Sector",
+    type: "Hazard",
+    desc: desc,
+    severity: severity,
+    status: "Queued",
+    time: "Just now"
+  };
+
+  appState.requests.unshift(newReq);
+  renderTriageQueue();
+
+  addChatMessage("assistant", {
+    text: `⚠️ **Hazard Reported on Map:**\n\n* **Details:** ${desc}\n* **Severity:** **${severity.toUpperCase()}**\n\nThe report has been entered into the emergency dispatch queue. Thank you for contributing to public safety.`
+  });
+
+  closeMapReportModal();
+}
+window.submitMapReport = submitMapReport;
 
 // 6. Vector Map Rendering
 function renderVectorMap() {
@@ -416,9 +530,10 @@ function selectRoad(road) {
       <h4>🚧 ${road.name}</h4>
       <p>Report: <strong>${road.notes}</strong></p>
     </div>
-    <div>
+    <div style="display: flex; gap: 6px; align-items: center;">
       <span class="badge ${statusBadge}">${road.status}</span>
-      <button class="btn btn-sm btn-accent" style="margin-left: 8px;" onclick="promptChatAbout('${road.name}')">Ask AI</button>
+      <button class="btn btn-sm btn-accent" onclick="promptChatAbout('${road.name}')">Ask AI</button>
+      <button class="btn btn-sm btn-danger" onclick="openMapReportModal('Hazard on ${road.name}')">Report</button>
     </div>
   `;
 }
@@ -699,7 +814,7 @@ function addChatMessage(sender, data) {
 }
 
 let currentUtterance = null;
-window.speakChatText = function (btn, text) {
+function speakChatText(btn, text) {
   if (window.speechSynthesis) {
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
@@ -712,12 +827,13 @@ window.speakChatText = function (btn, text) {
 
     const utterance = new SpeechSynthesisUtterance(text);
     const voices = window.speechSynthesis.getVoices();
+    const curLang = appState.currentLanguage || "en";
     let voiceLang = "en-US";
-    if (currentLanguage === "es") voiceLang = "es-ES";
-    if (currentLanguage === "hi") voiceLang = "hi-IN";
-    if (currentLanguage === "fr") voiceLang = "fr-FR";
+    if (curLang === "es") voiceLang = "es-ES";
+    if (curLang === "hi") voiceLang = "hi-IN";
+    if (curLang === "fr") voiceLang = "fr-FR";
     
-    const matchingVoice = voices.find(v => v.lang.startsWith(currentLanguage) || v.lang.startsWith(voiceLang));
+    const matchingVoice = voices.find(v => v.lang.startsWith(curLang) || v.lang.startsWith(voiceLang));
     if (matchingVoice) {
       utterance.voice = matchingVoice;
     }
@@ -740,7 +856,8 @@ window.speakChatText = function (btn, text) {
   } else {
     alert("Text-to-speech is not supported in this browser.");
   }
-};
+}
+window.speakChatText = speakChatText;
 
 function addChatTypingIndicator() {
   const chatMessages = document.getElementById("chat-messages");
@@ -763,28 +880,29 @@ function removeChatTypingIndicator(id) {
 }
 
 function formatMarkdown(text) {
+  if (!text) return "";
   let html = text;
 
   // Header sizes
-  html = html.replace(/### (.*?)\n/g, '<h3>$1</h3>');
-  html = html.replace(/## (.*?)\n/g, '<h2>$1</h2>');
+  html = html.replace(/### (.*?)(?:\n|$)/g, '<h3>$1</h3>');
+  html = html.replace(/## (.*?)(?:\n|$)/g, '<h2>$1</h2>');
 
-  // Strong
+  // Bold & Italic
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-  // Italic
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
 
   // Bullet lists
-  html = html.replace(/^- (.*?)\n/gm, '<li>$1</li>');
-  html = html.replace(/(<li>.*?<\/li>)/s, '<ul>$1</ul>');
+  html = html.replace(/^- (.*?)(?:\n|$)/gm, '<li>$1</li>');
+  html = html.replace(/(<li>.*?<\/li>)+/gs, (match) => `<ul>${match}</ul>`);
 
   // Linebreaks
+  html = html.replace(/\n\n+/g, '<br><br>');
   html = html.replace(/\n/g, '<br>');
 
   return html;
 }
 
-window.focusOnMap = function (locationId) {
+function focusOnMap(locationId) {
   // If in low bandwidth mode, don't focus map but alert user
   if (appState.lowBandwidthMode) {
     alert(`Map details disabled in Low Bandwidth mode. Location: ${locationId}`);
@@ -795,7 +913,9 @@ window.focusOnMap = function (locationId) {
   renderVectorMap();
 
   // Find location and update detail card
-  const scenario = window.emergencyData.scenarios[appState.currentScenario];
+  const scenario = window.emergencyData?.scenarios[appState.currentScenario];
+  if (!scenario) return;
+
   let loc = scenario.shelters.find(s => s.id === locationId);
   let type = "shelter";
   if (!loc) {
@@ -815,18 +935,23 @@ window.focusOnMap = function (locationId) {
     }
 
     // Smooth scroll map viewport into view if on small screens
-    document.getElementById("map-card-panel").scrollIntoView({ behavior: "smooth" });
+    const mapPanel = document.getElementById("map-card-panel");
+    if (mapPanel) mapPanel.scrollIntoView({ behavior: "smooth" });
   }
-};
+}
+window.focusOnMap = focusOnMap;
 
-window.promptChatAbout = function (name) {
+function promptChatAbout(name) {
   const input = document.getElementById("chat-input");
-  input.value = `Tell me about ${name}`;
-  sendChatMessage();
-};
+  if (input) {
+    input.value = `Tell me about ${name}`;
+    sendChatMessage();
+  }
+}
+window.promptChatAbout = promptChatAbout;
 
 // 13. Scenario Sandbox Handler
-window.setScenario = function (scenId) {
+function setScenario(scenId) {
   appState.currentScenario = scenId;
   appState.selectedLocationId = null;
 
@@ -835,31 +960,37 @@ window.setScenario = function (scenId) {
   buttons.forEach(btn => {
     btn.classList.remove("active");
   });
-  document.getElementById(`btn-scen-${scenId}`).classList.add("active");
+  const activeBtn = document.getElementById(`btn-scen-${scenId}`);
+  if (activeBtn) activeBtn.classList.add("active");
 
-  // Update Body styling context
-  document.body.className = "";
+  // Update Body styling context while preserving low bandwidth mode
+  const isLb = appState.lowBandwidthMode;
+  document.body.className = isLb ? "low-bandwidth-active" : "";
   if (scenId !== "clear") {
     document.body.classList.add(`scenario-${scenId}`);
   }
 
   // Reset selected detail card
-  document.getElementById("map-detail-card").className = "map-detail-card hidden-element";
-  document.getElementById("route-result").className = "route-result-box hidden-element";
+  const detailCard = document.getElementById("map-detail-card");
+  if (detailCard) detailCard.className = "map-detail-card hidden-element";
+  const routeResult = document.getElementById("route-result");
+  if (routeResult) routeResult.className = "route-result-box hidden-element";
 
   // Re-render
   renderAll();
 
   // Notify user in chat
+  const scenTitle = window.emergencyData?.scenarios[scenId]?.title || scenId;
   let systemMsg = {
-    text: `⚠️ **SYSTEM TRIGGER:** Active Scenario updated to: **${window.emergencyData.scenarios[scenId].title}**.\n\nAll real-time sensors, alerts, roadblocks, shelter statuses, and guidance documents have refreshed.`,
+    text: `⚠️ **SYSTEM TRIGGER:** Active Scenario updated to: **${scenTitle}**.\n\nAll real-time sensors, alerts, roadblocks, shelter statuses, and guidance documents have refreshed.`,
     action: "scenario-changed"
   };
   addChatMessage("assistant", systemMsg);
-};
+}
+window.setScenario = setScenario;
 
 // 14. Low Bandwidth / Offline Mode Toggle
-window.toggleLowBandwidth = function () {
+function toggleLowBandwidth() {
   appState.lowBandwidthMode = !appState.lowBandwidthMode;
 
   const body = document.body;
@@ -867,25 +998,29 @@ window.toggleLowBandwidth = function () {
 
   if (appState.lowBandwidthMode) {
     body.classList.add("low-bandwidth-active");
-    banner.classList.remove("hidden-element");
+    if (banner) banner.classList.remove("hidden-element");
   } else {
     body.classList.remove("low-bandwidth-active");
-    banner.classList.add("hidden-element");
+    if (banner) banner.classList.add("hidden-element");
   }
 
   renderAll();
-};
+}
+window.toggleLowBandwidth = toggleLowBandwidth;
 
 function renderLowBandwidthDashboard() {
   const shList = document.getElementById("lb-shelters-list");
   const rdList = document.getElementById("lb-roads-list");
   const hpList = document.getElementById("lb-hospitals-list");
 
+  if (!shList || !rdList || !hpList) return;
+
   shList.innerHTML = "";
   rdList.innerHTML = "";
   hpList.innerHTML = "";
 
-  const scenario = window.emergencyData.scenarios[appState.currentScenario];
+  const scenario = window.emergencyData?.scenarios[appState.currentScenario];
+  if (!scenario) return;
 
   // Shelters
   scenario.shelters.forEach(sh => {
@@ -921,3 +1056,44 @@ function renderLowBandwidthDashboard() {
     hpList.appendChild(item);
   });
 }
+
+// 15. SOS Beacon Overlay Toggle
+function toggleSOSBeacon() {
+  const overlay = document.getElementById("sos-overlay");
+  if (!overlay) return;
+
+  const isHidden = overlay.classList.contains("hidden-element");
+  if (isHidden) {
+    overlay.classList.remove("hidden-element");
+    const gpsEl = document.getElementById("sos-gps-coords");
+    if (gpsEl) {
+      gpsEl.innerText = "Coordinates: Lat 37.7749° N, Lon 122.4194° W • High-Accuracy GPS Lock";
+    }
+  } else {
+    overlay.classList.add("hidden-element");
+  }
+}
+window.toggleSOSBeacon = toggleSOSBeacon;
+
+// 16. Language Switcher (Complete Multilingual Dictionary Support)
+function changeLanguage(lang) {
+  appState.currentLanguage = lang;
+  const translations = window.emergencyData?.translations;
+  if (!translations || !translations[lang]) return;
+
+  const t = translations[lang];
+
+  document.querySelectorAll("[data-translate]").forEach(el => {
+    const key = el.getAttribute("data-translate");
+    if (t[key]) {
+      el.textContent = t[key];
+    }
+  });
+
+  const chatInput = document.getElementById("chat-input");
+  if (chatInput && t.chatPlaceholder) {
+    chatInput.placeholder = t.chatPlaceholder;
+  }
+}
+window.changeLanguage = changeLanguage;
+
