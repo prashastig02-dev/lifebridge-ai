@@ -760,13 +760,16 @@ function renderCommunityBoard() {
 
 // 11. Tab Switching for Right Column
 window.switchToolsTab = function (tabName) {
+  if (tabName === 'tools') tabName = 'calc';
   // Hide all panels
   document.querySelectorAll(".tab-pane").forEach(pane => pane.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(btn => btn.classList.remove("active"));
 
   // Show active
-  document.getElementById(`tab-content-${tabName}`).classList.add("active");
-  document.getElementById(`tab-btn-${tabName}`).classList.add("active");
+  const targetPane = document.getElementById(`tab-content-${tabName}`);
+  const targetBtn = document.getElementById(`tab-btn-${tabName}`);
+  if (targetPane) targetPane.classList.add("active");
+  if (targetBtn) targetBtn.classList.add("active");
 };
 
 // 12. Chatbot Dialogues

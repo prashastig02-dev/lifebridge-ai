@@ -791,6 +791,13 @@ h1, h2, h3, h4 {
   gap: 8px;
 }
 
+.form-row-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+
 .form-group {
   display: flex;
   flex-direction: column;
@@ -1556,7 +1563,8 @@ body.low-bandwidth-active .lb-item.warning { border-color: #ffd60a; color: #ffd6
     padding: 10px;
   }
   .form-row-2,
-  .form-row-3 {
+  .form-row-3,
+  .form-row-4 {
     grid-template-columns: 1fr !important;
     gap: 8px;
   }
@@ -1596,10 +1604,90 @@ body.low-bandwidth-active .lb-item.warning { border-color: #ffd60a; color: #ffd6
     font-size: 18px;
   }
   .sos-coordinates {
-    font-size: 11px;
-    padding: 8px 10px;
+/* 6. Compact Height for Laptop Displays (500px - 750px viewport height) */
+@media (max-height: 750px) {
+  .app-container {
+    padding: 6px 12px;
+    gap: 8px;
   }
+  .app-header {
+    padding: 8px 14px;
+    gap: 8px;
+  }
+  .logo-icon-wrap {
+    padding: 5px;
+  }
+  .logo-icon {
+    width: 20px;
+    height: 20px;
+  }
+  .logo-text h1 {
+    font-size: 17px;
+  }
+  .logo-text p {
+    font-size: 9.5px;
+  }
+  .btn-scen {
+    padding: 4px 8px;
+    font-size: 10px;
+  }
+  .btn-toggle {
+    padding: 6px 10px;
+    font-size: 10px;
+  }
+  .alerts-ticker-wrap {
+    padding: 4px 10px;
+    font-size: 11px;
+    gap: 8px;
+  }
+  .main-grid {
+    gap: 10px;
+  }
+  .grid-col {
+    gap: 10px;
+  }
+  .card-header {
+    padding: 8px 12px;
+  }
+  .card-header h2 {
+    font-size: 13px;
+  }
+  .card-body {
+    padding: 8px 12px;
+  }
+  .map-card {
+    min-height: 220px;
+  }
+  .map-viewport {
+    min-height: 180px;
+  }
+  .chatbot-card {
+    max-height: 320px;
+  }
+  .contacts-card {
+    max-height: 180px;
+  }
+  .tab-btn {
+    padding: 7px 4px;
+    font-size: 10.5px;
+  }
+  .tools-content-scroll {
+    padding: 10px 12px;
+  }
+  .widget-section h3 {
+    font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .widget-desc {
+    font-size: 10px;
+    margin-bottom: 6px;
+  }
+  .calc-item {
+    font-size: 11px;
+    padding-bottom: 2px;
 }
+
+
 
 
 /* --- EXTENDED EMERGENCY APP FEATURES --- */
@@ -1695,43 +1783,62 @@ body.low-bandwidth-active .lb-item.warning { border-color: #ffd60a; color: #ffd6
 }
 
 /* 2. Weather & Telemetry Card */
+/* 2. Weather & Telemetry Card - Compact Executive Strip */
 .telemetry-card {
   border-bottom: 2px solid var(--header-accent-color);
   transition: border-color 0.5s ease;
+  flex-shrink: 0;
 }
 
-.telemetry-grid {
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+}
+
+.telemetry-status-pill {
+  font-family: var(--font-heading);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(48, 209, 88, 0.12);
+  border: 1px solid rgba(48, 209, 88, 0.3);
+  letter-spacing: 0.02em;
+}
+
+.compact-telemetry {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 8px !important;
+  padding: 8px 12px !important;
 }
 
-.telemetry-item {
-  background: rgba(0, 0, 0, 0.15);
+.compact-telemetry .telemetry-item {
+  background: rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-glass);
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 6px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
-.telemetry-item.full-width {
-  grid-column: span 2;
-}
-
-.telemetry-label {
-  font-size: 10px;
-  font-weight: 600;
+.compact-telemetry .telemetry-label {
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-muted);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
-.telemetry-val {
+.compact-telemetry .telemetry-val {
   font-family: var(--font-heading);
-  font-size: 18px;
+  font-size: 14px;
   font-weight: 700;
+  line-height: 1.1;
 }
 
 /* 3. Map Click Reporting Modal */

@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="index.css?v=2">
 </head>
 <body>
   <!-- Fullscreen SOS Beacon Alarm Overlay -->
@@ -312,7 +312,7 @@
       <section class="grid-col right-col">
         <!-- Live Weather Telemetry Status Card -->
         <div class="card telemetry-card">
-          <div class="card-header">
+          <div class="card-header telemetry-header">
             <div class="header-title">
               <svg class="card-icon text-cyan" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
@@ -320,27 +320,24 @@
               </svg>
               <h2 data-translate="weatherTitle">⚡ Live Weather Telemetry</h2>
             </div>
+            <span class="telemetry-status-pill text-green" id="weather-status">Clear & Calm</span>
           </div>
-          <div class="card-body telemetry-grid">
+          <div class="card-body telemetry-grid compact-telemetry">
             <div class="telemetry-item">
-              <span class="telemetry-label" data-translate="weatherTemp">Temperature</span>
+              <span class="telemetry-label" data-translate="weatherTemp">Temp</span>
               <span class="telemetry-val text-cyan" id="weather-temp">24°C</span>
             </div>
             <div class="telemetry-item">
-              <span class="telemetry-label" data-translate="weatherWind">Wind Speed</span>
+              <span class="telemetry-label" data-translate="weatherWind">Wind</span>
               <span class="telemetry-val text-amber" id="weather-wind">5 km/h</span>
             </div>
             <div class="telemetry-item">
-              <span class="telemetry-label" data-translate="weatherRain">Precipitation</span>
+              <span class="telemetry-label" data-translate="weatherRain">Rain</span>
               <span class="telemetry-val text-info" id="weather-rain">0 mm</span>
             </div>
             <div class="telemetry-item">
-              <span class="telemetry-label" data-translate="weatherSeismic">Seismic Level</span>
+              <span class="telemetry-label" data-translate="weatherSeismic">Seismic</span>
               <span class="telemetry-val text-red" id="weather-seismic">0.0 Mag</span>
-            </div>
-            <div class="telemetry-item full-width">
-              <span class="telemetry-label" data-translate="weatherStatus">Condition State</span>
-              <span class="telemetry-val text-green" id="weather-status">Clear & Calm</span>
             </div>
           </div>
         </div>
@@ -348,17 +345,52 @@
         <div class="card tools-card">
           <!-- Card Tab Headers -->
           <div class="tools-tabs">
-            <button id="tab-btn-tools" class="tab-btn active" onclick="switchToolsTab('tools')">🛠️ Calculators</button>
+            <button id="tab-btn-calc" class="tab-btn active" onclick="switchToolsTab('calc')">📦 Calculator</button>
+            <button id="tab-btn-route" class="tab-btn" onclick="switchToolsTab('route')">🚗 Safe Route</button>
             <button id="tab-btn-guides" class="tab-btn" onclick="switchToolsTab('guides')">📋 Survival Guides</button>
-            <button id="tab-btn-community" class="tab-btn" onclick="switchToolsTab('community')">🤝 Community Board</button>
+            <button id="tab-btn-community" class="tab-btn" onclick="switchToolsTab('community')">🤝 Community</button>
           </div>
 
           <div class="card-body tools-content-scroll">
             
-            <!-- TAB 1: CALCULATORS & ROUTING -->
-            <div id="tab-content-tools" class="tab-pane active">
-              
-              <!-- Safe Route Checking Widget -->
+            <!-- TAB 1: EMERGENCY SUPPLIES CALCULATOR (PRIMARY ACTIVE TAB) -->
+            <div id="tab-content-calc" class="tab-pane active">
+              <div class="widget-section">
+                <h3>📦 Emergency Supplies Calculator</h3>
+                <p class="widget-desc">Calculates basic nutritional and emergency resource amounts needed for survival.</p>
+                <div class="calculator-form">
+                  <div class="form-row-4">
+                    <div class="form-group">
+                      <label for="calc-adults">Adults</label>
+                      <input type="number" id="calc-adults" min="1" value="2" onchange="calculateSupplies()">
+                    </div>
+                    <div class="form-group">
+                      <label for="calc-children">Kids</label>
+                      <input type="number" id="calc-children" min="0" value="1" onchange="calculateSupplies()">
+                    </div>
+                    <div class="form-group">
+                      <label for="calc-pets">Pets</label>
+                      <input type="number" id="calc-pets" min="0" value="0" onchange="calculateSupplies()">
+                    </div>
+                    <div class="form-group">
+                      <label for="calc-days">Days</label>
+                      <select id="calc-days" onchange="calculateSupplies()">
+                        <option value="3">3 Days</option>
+                        <option value="7" selected>7 Days</option>
+                        <option value="14">14 Days</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="calculator-results" id="calc-results">
+                  <!-- Calculated values -->
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: SAFE ROUTE INSPECTOR -->
+            <div id="tab-content-route" class="tab-pane">
               <div class="widget-section">
                 <h3>🚗 Safe Route Inspector</h3>
                 <p class="widget-desc">Verifies if a route passes through hazardous or blocked checkpoints.</p>
@@ -387,42 +419,6 @@
                   <!-- Result injected by app.js -->
                 </div>
               </div>
-
-              <hr class="widget-divider">
-
-              <!-- Family Supplies Emergency Calculator -->
-              <div class="widget-section">
-                <h3>📦 Emergency Supplies Calculator</h3>
-                <p class="widget-desc">Calculates basic nutritional and emergency resource amounts needed for survival.</p>
-                <div class="calculator-form">
-                  <div class="form-row-3">
-                    <div class="form-group">
-                      <label for="calc-adults">Adults</label>
-                      <input type="number" id="calc-adults" min="1" value="2" onchange="calculateSupplies()">
-                    </div>
-                    <div class="form-group">
-                      <label for="calc-children">Children</label>
-                      <input type="number" id="calc-children" min="0" value="1" onchange="calculateSupplies()">
-                    </div>
-                    <div class="form-group">
-                      <label for="calc-pets">Pets</label>
-                      <input type="number" id="calc-pets" min="0" value="0" onchange="calculateSupplies()">
-                    </div>
-                  </div>
-                  <div class="form-group">
-                    <label for="calc-days">Survival Period</label>
-                    <select id="calc-days" onchange="calculateSupplies()">
-                      <option value="3">3 Days (Critical Supply)</option>
-                      <option value="7" selected>7 Days (Recommended Pack)</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div class="calculator-results" id="calc-results">
-                  <!-- Calculated values -->
-                </div>
-              </div>
-
             </div>
 
             <!-- TAB 2: SURVIVAL PREP GUIDES -->
