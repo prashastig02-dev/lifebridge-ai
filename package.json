@@ -2,13 +2,18 @@
   "name": "capstone-project",
   "version": "1.0.0",
   "description": "",
-  "main": "ai.js",
+  "main": "server.js",
   "scripts": {
+    "build": "echo \"Static assets ready for deployment\"",
     "dev": "node server.js",
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "disaster-response",
+    "emergency-ai",
+    "crisis-management"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs"
