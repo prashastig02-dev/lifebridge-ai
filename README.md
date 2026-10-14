@@ -1,5 +1,7 @@
 # 🌐 LifeBridge AI — Emergency Response & Disaster Assistant
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-GitHub%20Pages-2ea44f?style=for-the-badge&logo=github)](https://prashastig02-dev.github.io/lifebridge-ai/)
+
 LifeBridge AI is an AI-driven, interactive crisis management and disaster response dashboard designed for real-time triage, communication, and resource coordination. It is built to operate under severe constraints, featuring a dedicated **Low Bandwidth / Emergency Mode** to ensure citizens in disaster-affected areas can access life-saving information even on weak cellular networks.
 
 ![LifeBridge AI Dashboard](assets/dashboard.png)
